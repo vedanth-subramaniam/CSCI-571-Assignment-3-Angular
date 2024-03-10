@@ -2,7 +2,8 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormsModule} from "@angular/forms";
 import {HttpClientModule} from "@angular/common/http";
 import {StockApiService} from "../stock-api.service";
-import {Subscription, interval, switchMap, forkJoin} from 'rxjs';
+import {Subscription, interval, switchMap, forkJoin, tap, startWith} from 'rxjs';
+
 @Component({
   selector: 'app-stock-search',
   standalone: true,
@@ -15,7 +16,7 @@ import {Subscription, interval, switchMap, forkJoin} from 'rxjs';
 export class StockSearchComponent implements OnInit, OnDestroy {
 
   tickerSymbol: string = '';
-  private apiSubscription: Subscription | undefined;
+  private subscriptions: Subscription = new Subscription();
 
   constructor(private stockService: StockApiService) {
   }
@@ -27,37 +28,53 @@ export class StockSearchComponent implements OnInit, OnDestroy {
   searchStock() {
     console.log('Searching for stock:', this.tickerSymbol);
 
-    this.apiSubscription = interval(15000)
-      .pipe(
-        switchMap(() => forkJoin({
-          companyCommonDetails: this.stockService.getCompanyCommonDetailsAPI(this.tickerSymbol),
-          newsTabDetails: this.stockService.getNewsTabDetailsAPI(this.tickerSymbol),
-          chartsTabDetails: this.stockService.getChartsTabDetailsAPI(this.tickerSymbol),
-          insightsTabDetails: this.stockService.getInsightsTabDetailsAPI(this.tickerSymbol)
-        }))
-      )
-      .subscribe({
-        next: (responses) => {
-          console.log('Company Common Details:', responses.companyCommonDetails);
-          console.log('News Tab Details:', responses.newsTabDetails);
-          console.log('Charts Tab Details:', responses.chartsTabDetails);
-          console.log('Insights Tab Details:', responses.insightsTabDetails);
-        },
-        error: (error) => {
-          console.error('Error in API calls:', error);
-        }
-      });
+    const apiInterval$ = interval(15000).pipe(startWith(0));
+
+    this.subscriptions.add(
+      apiInterval$.pipe(
+        tap(() => this.stockService.getCompanyCommonDetailsAPI(this.tickerSymbol).subscribe(
+          response => console.log('Company Common Details:', response),
+          error => console.error('Error fetching Company Common Details', error)
+        ))
+      ).subscribe()
+    );
+
+    this.subscriptions.add(
+      apiInterval$.pipe(
+        tap(() => this.stockService.getNewsTabDetailsAPI(this.tickerSymbol).subscribe(
+          response => console.log('News Tab Details:', response),
+          error => console.error('Error fetching News Tab Details', error)
+        ))
+      ).subscribe()
+    );
+
+    this.subscriptions.add(
+      apiInterval$.pipe(
+        tap(() => this.stockService.getChartsTabDetailsAPI(this.tickerSymbol).subscribe(
+          response => console.log('Charts Tab Details:', response),
+          error => console.error('Error fetching Charts Tab Details', error)
+        ))
+      ).subscribe()
+    );
+
+    this.subscriptions.add(
+      apiInterval$.pipe(
+        tap(() => this.stockService.getInsightsTabDetailsAPI(this.tickerSymbol).subscribe(
+          response => console.log('Insights Tab Details:', response),
+          error => console.error('Error fetching Insights Tab Details', error)
+        ))
+      ).subscribe()
+    );
   }
 
   clearSearch() {
     this.tickerSymbol = '';
+    this.subscriptions.unsubscribe();
     // Implement the logic to clear out the currently searched  results and show the initial search page
   }
 
   ngOnDestroy() {
     console.log("Bye");
-    if (this.apiSubscription) {
-      this.apiSubscription.unsubscribe();
-    }
+    this.subscriptions.unsubscribe();
   }
 }
