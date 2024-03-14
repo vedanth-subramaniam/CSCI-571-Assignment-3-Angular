@@ -1,0 +1,37 @@
+.search-bar {
+  width: 50%;
+  height: 20%;
+  border: 5px solid darkblue;
+  border-radius: 25px;
+  padding: 5px 20px;
+  position: relative;
+}
+
+.search-input {
+  border: none;
+  outline: none;
+  width: calc(100% - 40px);
+}
+
+.search-button {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.no-outline:focus {
+  outline: none;
+  box-shadow: none;
+  border-color: transparent;
+}
+
+h1 {
+  font-size: 30px;
+}
+
+.form-stock-search {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+}

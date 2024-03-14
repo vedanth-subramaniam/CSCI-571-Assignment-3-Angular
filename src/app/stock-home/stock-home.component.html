@@ -1,0 +1,28 @@
+<section id="search-section">
+  <div class="container mt-5 d-md-flex flex-column justify-content-center">
+    <div class="d-md-flex justify-content-center mb-2">
+      <h1>STOCK SEARCH</h1>
+    </div>
+    <div class="d-md-flex justify-content-center">
+      <div class="input-group mb-3 search-bar">
+        <input matInput type="text" [formControl]="stockSearchControl" class="form-control me-2 border-0 no-outline"
+               placeholder="Enter stock ticker symbol" aria-label="Stock ticker symbol" [matAutocomplete]="auto">
+        <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete">
+          @for (option of autocompleteSearchResults; track option) {
+            <mat-option [value]="option.displaySymbol"
+                        [routerLink]="['/search', option.displaySymbol]">{{ option.displaySymbol + " | " + option.description }}
+            </mat-option>
+          }
+        </mat-autocomplete>
+        <div class="input-group-append d-flex">
+          <button class="btn no-outline" type="button" [routerLink]="['/search', stockSearchControl.value]">
+            <i class="bi bi-search"></i>
+          </button>
+          <button class="btn border-0" type="button" (click)="clearSearch()">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

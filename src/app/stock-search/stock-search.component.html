@@ -10,12 +10,14 @@
         <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete">
           @for (option of autocompleteSearchResults; track option) {
             <mat-option [value]="option.displaySymbol"
-                        (click)="searchStock()">{{ option.displaySymbol + " | " + option.description }}
+                        [routerLink]="['/search', option.displaySymbol]"
+                        (click)="searchStock(option.displaySymbol)">{{ option.displaySymbol + " | " + option.description }}
             </mat-option>
           }
         </mat-autocomplete>
         <div class="input-group-append d-flex">
-          <button class="btn no-outline" type="button" (click)="searchStock()">
+          <button class="btn no-outline" type="button" [routerLink]="['/search', stockSearchControl.value]"
+                  (click)="searchStock(stockSearchControl.value)">
             <i class="bi bi-search"></i>
           </button>
           <button class="btn border-0" type="button" (click)="clearSearch()">

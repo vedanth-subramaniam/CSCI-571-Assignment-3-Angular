@@ -18,12 +18,14 @@ import {MatAutocomplete, MatAutocompleteTrigger, MatOption} from "@angular/mater
 import {MatFormField} from "@angular/material/form-field";
 import {MatInput} from "@angular/material/input";
 import {auto} from "@popperjs/core";
+import {Router} from "express";
+import {ActivatedRoute, RouterLink} from "@angular/router";
 
 @Component({
   selector: 'app-stock-search',
   standalone: true,
   imports: [
-    FormsModule, HttpClientModule, ReactiveFormsModule, NgForOf, NgIf, MatAutocomplete, MatOption, AsyncPipe, MatFormField, MatAutocompleteTrigger, MatInput, DatePipe, NgOptimizedImage
+    FormsModule, HttpClientModule, ReactiveFormsModule, NgForOf, NgIf, MatAutocomplete, MatOption, AsyncPipe, MatFormField, MatAutocompleteTrigger, MatInput, DatePipe, NgOptimizedImage, RouterLink
   ],
   templateUrl: './stock-search.component.html',
   styleUrl: './stock-search.component.css'
@@ -46,12 +48,19 @@ export class StockSearchComponent implements OnInit, OnDestroy {
   chartResponse!: any;
   insightsResponse!: any;
 
-  constructor(private stockService: StockApiService) {
+  constructor(private stockService: StockApiService, private route: ActivatedRoute) {
   }
 
   ngOnInit() {
 
-    console.log("Init");
+    const routeParams = this.route.snapshot.paramMap;
+    const stockTickerFromRoute = String(routeParams.get('stockTicker'));
+
+    this.tickerSymbol = this.stockSearchControl.value;
+    this.searchStock(stockTickerFromRoute);
+
+    console.log("Search page");
+    console.log(stockTickerFromRoute);
     this.autocompleteSearchResults = [];
     this.stockSearchControl.valueChanges.pipe(
       debounceTime(700), // Wait for 700ms pause in events
@@ -61,7 +70,6 @@ export class StockSearchComponent implements OnInit, OnDestroy {
       switchMap(value =>
         this.stockService.getAutocompleteAPI(value).pipe(
           catchError(error => {
-            // Handle or log the error
             console.error('Error fetching autocomplete results:', error);
             return of([]); // Return an empty array or appropriate fallback value on error
           })
@@ -74,9 +82,9 @@ export class StockSearchComponent implements OnInit, OnDestroy {
     });
   }
 
-  searchStock() {
+  searchStock(stockInput: any) {
 
-    this.tickerSymbol = this.stockSearchControl.value;
+    this.tickerSymbol = stockInput;
     console.log('Searching for stock:', this.tickerSymbol);
 
     const apiInterval$ = interval(15000).pipe(startWith(0));
@@ -130,7 +138,6 @@ export class StockSearchComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    // Unsubscribe to prevent memory leaks
     this.autocompleteSearchResults = [];
     this.subscriptions.unsubscribe();
   }
