@@ -7,7 +7,7 @@ import {Observable, of} from "rxjs";
 })
 export class StockApiService {
 
-  host = "http://localhost:8080";
+  host = "https://csci-570-a3-node-app-1.wm.r.appspot.com";
   constructor(private http: HttpClient) {
   }
 
